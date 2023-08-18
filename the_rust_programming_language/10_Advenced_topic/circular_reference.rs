@@ -1,33 +1,4 @@
-// // student* -> course* -> student*
 
-// struct Student<'a> {
-//     name: String,
-//     course: Vec<&'a Course<'a>>,
-// }
-
-// struct Course<'a> {
-//     name: String,
-//     students: Vec<&'a Student<'a>>,
-// }
-
-// impl<'a> Student<'a> {
-//     fn new(name: &str) -> Student<'a> {
-//         Student { name: name.into(), course: Vec::new() }
-//     }
-// }
-
-// impl<'a> Course<'a> {
-//     fn new(name: &str) -> Course<'a> {
-//         Course { name: name.into(), students: Vec::new() }
-//     }
-
-//     fn add_student(&'a mut self, student: &'a mut Student<'a>) {
-//         self.students.push(student);
-//         student.course.push(self);
-//         //  student is borrowed as mutable and immutable at the same time
-//         // RefCell is needed
-//     }
-// }
 
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -59,20 +30,30 @@ impl Course {
     }
 }
 
-
-
 fn main(){
-
+    // Rc gives .clone() method
+    // RefCell gives .borrow() and .borrow_mut() methods
     let john = Rc::new(RefCell::new(Student::new("John")));
 
     let course = Course::new("Rust course");
     let refcell_course = Rc::new(RefCell::new(course));
+    Course::add_student(refcell_course, john.clone());
 
-    Course::add_student(refcell_course, john);
+    let course2 = Course::new("Rust course advanced");
+    let refcell_course2 = Rc::new(RefCell::new(course2));
+    Course::add_student(refcell_course2.clone(), john.clone());
 
-    // for s in course.students {
-    //     println!("student: {}", s.name);
-    // }
+    println!("john: {:?}", john.borrow().name);
+    println!("john: {:?}", john.borrow().course[0].borrow().name);
+    println!("john: {:?}", john.borrow().course[1].borrow().name);
 
+
+    let jane = Rc::new(RefCell::new(Student::new("Jane")));
+
+    Course::add_student(refcell_course2, jane.clone());
 }
+
+
+// database normalization
+// Enrollments {course, student}
 
